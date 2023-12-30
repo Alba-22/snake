@@ -10,10 +10,10 @@ class AppWidget extends StatelessWidget {
       title: "Snake Game",
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+        useMaterial3: false,
+        fontFamily: "Monocraft",
       ),
-      home: GamePage(),
+      home: const GamePage(),
     );
   }
 }

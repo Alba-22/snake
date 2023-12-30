@@ -29,10 +29,13 @@ class _GamePageState extends State<GamePage> {
   final random = Random();
   late int foodPosition;
 
+  final stopwatch = Stopwatch();
+
   @override
   void initState() {
     super.initState();
     foodPosition = random.nextInt(numberOfSquares);
+
     timer = Timer.periodic(
       const Duration(milliseconds: 100),
       (timer) {
@@ -42,6 +45,8 @@ class _GamePageState extends State<GamePage> {
       },
     );
   }
+
+  int points = 0;
 
   Direction currentDirection = Direction.bottom;
 
@@ -67,6 +72,7 @@ class _GamePageState extends State<GamePage> {
           default:
         }
         if (ate) {
+          points++;
           foodPosition = random.nextInt(numberOfSquares);
         }
       }
@@ -76,7 +82,7 @@ class _GamePageState extends State<GamePage> {
   @override
   Widget build(BuildContext context) {
     final fieldWidth = MediaQuery.of(context).size.width - (fieldPadding * 2);
-    final fieldHeight = (MediaQuery.of(context).size.height * 0.9) - (fieldPadding * 2);
+    final fieldHeight = (MediaQuery.of(context).size.height * 0.8) - (fieldPadding * 2);
 
     final blockSizeFromHeight = (fieldHeight / numberOfRows);
     final blockSizeFromWidth = (fieldWidth / numberOfColumns);
@@ -89,27 +95,48 @@ class _GamePageState extends State<GamePage> {
         focusNode: FocusNode(),
         onKey: (value) {
           setState(() {
-            if (value.isKeyPressed(LogicalKeyboardKey.arrowUp)) {
+            if (value.isKeyPressed(LogicalKeyboardKey.arrowUp) && gameState == GameState.playing) {
               currentDirection = Direction.top;
               gameState = GameState.playing;
-            } else if (value.isKeyPressed(LogicalKeyboardKey.arrowDown)) {
+              if (!stopwatch.isRunning) {
+                stopwatch.start();
+              }
+            } else if (value.isKeyPressed(LogicalKeyboardKey.arrowDown) &&
+                gameState == GameState.playing) {
               currentDirection = Direction.bottom;
               gameState = GameState.playing;
-            } else if (value.isKeyPressed(LogicalKeyboardKey.arrowRight)) {
+              if (!stopwatch.isRunning) {
+                stopwatch.start();
+              }
+            } else if (value.isKeyPressed(LogicalKeyboardKey.arrowRight) &&
+                gameState == GameState.playing) {
               currentDirection = Direction.right;
               gameState = GameState.playing;
-            } else if (value.isKeyPressed(LogicalKeyboardKey.arrowLeft)) {
+              if (!stopwatch.isRunning) {
+                stopwatch.start();
+              }
+            } else if (value.isKeyPressed(LogicalKeyboardKey.arrowLeft) &&
+                gameState == GameState.playing) {
               currentDirection = Direction.left;
               gameState = GameState.playing;
+              if (!stopwatch.isRunning) {
+                stopwatch.start();
+              }
             } else if (value.isKeyPressed(LogicalKeyboardKey.space)) {
               if (gameState == GameState.idle) {
+                stopwatch.start();
                 gameState = GameState.playing;
               } else if (gameState == GameState.playing) {
+                stopwatch.stop();
                 gameState = GameState.idle;
               }
             } else if (value.isKeyPressed(LogicalKeyboardKey.keyR)) {
+              stopwatch.reset();
+              stopwatch.stop();
               snake = Snake();
               gameState = GameState.idle;
+              points = 0;
+              foodPosition = random.nextInt(numberOfSquares);
             }
           });
         },
@@ -117,6 +144,27 @@ class _GamePageState extends State<GamePage> {
           children: [
             Container(
               height: MediaQuery.of(context).padding.top,
+            ),
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: min(fieldWidth.toDouble(), 500),
+              ),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.grey[900],
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Center(
+                  child: Text(
+                    "SNAKE GAME",
+                    style: TextStyle(
+                      fontSize: 40,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
             ),
             Container(
               margin: EdgeInsets.all(fieldPadding.toDouble()),
@@ -149,10 +197,59 @@ class _GamePageState extends State<GamePage> {
                 ),
               ),
             ),
-            Expanded(
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: min(fieldWidth.toDouble(), 500),
+              ),
               child: Container(
-                width: double.infinity,
-                color: Colors.red,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.grey[900],
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Tempo de Jogo",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
+                        ),
+                        Text(
+                          "${stopwatch.elapsed.inHours.toString().padLeft(2, "0")}:${(stopwatch.elapsed.inMinutes % 60).toString().padLeft(2, "0")}:${(stopwatch.elapsed.inSeconds % 60).toString().padLeft(2, "0")}",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 36,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        const Text(
+                          "Pontuação",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
+                        ),
+                        Text(
+                          points.toString().padLeft(4, "0"),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 36,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
             Container(
