@@ -7,4 +7,4 @@ List<int> snakeInitialPosition = List.generate(
   (index) => 210 + (index * numberOfColumns),
 );
 
-enum Direction { top, left, bottom, right, idle }
+enum Direction { top, left, bottom, right }

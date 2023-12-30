@@ -6,6 +6,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_snake/app/constants.dart';
 import 'package:flutter_snake/app/snake.dart';
 
+enum GameState {
+  idle,
+  playing,
+  gameOver,
+}
+
 class GamePage extends StatefulWidget {
   const GamePage({Key? key}) : super(key: key);
 
@@ -15,6 +21,8 @@ class GamePage extends StatefulWidget {
 
 class _GamePageState extends State<GamePage> {
   Snake snake = Snake();
+
+  GameState gameState = GameState.idle;
 
   late Timer timer;
 
@@ -28,31 +36,39 @@ class _GamePageState extends State<GamePage> {
     timer = Timer.periodic(
       const Duration(milliseconds: 100),
       (timer) {
-        update();
+        if (gameState != GameState.gameOver) {
+          update();
+        }
       },
     );
   }
 
-  Direction currentDirection = Direction.idle;
+  Direction currentDirection = Direction.bottom;
 
   // GameLoop
   void update() {
     setState(() {
-      final ate = snake.head == foodPosition;
-
-      switch (currentDirection) {
-        case Direction.top:
-          snake.switchToTop(ate);
-        case Direction.bottom:
-          snake.switchToBottom(ate);
-        case Direction.right:
-          snake.switchToRight(ate);
-        case Direction.left:
-          snake.switchToLeft(ate);
-        default:
+      if (snake.collidedItself) {
+        gameState = GameState.gameOver;
+        return;
       }
-      if (ate) {
-        foodPosition = random.nextInt(numberOfSquares);
+      if (gameState == GameState.playing) {
+        final ate = snake.head == foodPosition;
+
+        switch (currentDirection) {
+          case Direction.top:
+            snake.switchToTop(ate);
+          case Direction.bottom:
+            snake.switchToBottom(ate);
+          case Direction.right:
+            snake.switchToRight(ate);
+          case Direction.left:
+            snake.switchToLeft(ate);
+          default:
+        }
+        if (ate) {
+          foodPosition = random.nextInt(numberOfSquares);
+        }
       }
     });
   }
@@ -75,17 +91,25 @@ class _GamePageState extends State<GamePage> {
           setState(() {
             if (value.isKeyPressed(LogicalKeyboardKey.arrowUp)) {
               currentDirection = Direction.top;
+              gameState = GameState.playing;
             } else if (value.isKeyPressed(LogicalKeyboardKey.arrowDown)) {
               currentDirection = Direction.bottom;
+              gameState = GameState.playing;
             } else if (value.isKeyPressed(LogicalKeyboardKey.arrowRight)) {
               currentDirection = Direction.right;
+              gameState = GameState.playing;
             } else if (value.isKeyPressed(LogicalKeyboardKey.arrowLeft)) {
               currentDirection = Direction.left;
+              gameState = GameState.playing;
             } else if (value.isKeyPressed(LogicalKeyboardKey.space)) {
-              currentDirection = Direction.idle;
+              if (gameState == GameState.idle) {
+                gameState = GameState.playing;
+              } else if (gameState == GameState.playing) {
+                gameState = GameState.idle;
+              }
             } else if (value.isKeyPressed(LogicalKeyboardKey.keyR)) {
               snake = Snake();
-              currentDirection = Direction.idle;
+              gameState = GameState.idle;
             }
           });
         },
@@ -143,6 +167,8 @@ class _GamePageState extends State<GamePage> {
   Color squareColor(int index) {
     if (index == foodPosition) {
       return Colors.green;
+    } else if (index == snake.head) {
+      return Colors.deepOrange;
     } else if (snake.positions.contains(index)) {
       return Colors.orange;
     }

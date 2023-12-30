@@ -5,14 +5,19 @@ class Snake {
   Direction _currentDirection;
 
   Snake()
-      : _position = snakeInitialPosition,
-        _currentDirection = Direction.idle;
+      : _position = [...snakeInitialPosition],
+        _currentDirection = Direction.bottom;
 
   int get size => _position.length;
 
   List<int> get positions => _position;
 
   int get head => positions.last;
+
+  bool get collidedItself {
+    final tileSet = _position.toSet();
+    return tileSet.length != _position.length;
+  }
 
   void switchToTop(bool ate) {
     if (_currentDirection != Direction.bottom) {
