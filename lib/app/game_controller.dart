@@ -131,7 +131,13 @@ class GameController extends ChangeNotifier {
     notifyListeners();
   }
 
-  int get _getRandomPosition => Random().nextInt(numberOfSquares);
+  int get _getRandomPosition {
+    int randomPosition = Random().nextInt(numberOfSquares);
+    while (snake.positions.contains(randomPosition)) {
+      randomPosition = Random().nextInt(numberOfSquares);
+    }
+    return randomPosition;
+  }
 
   int get points => _points;
 
