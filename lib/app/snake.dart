@@ -12,6 +12,8 @@ class Snake {
 
   List<int> get positions => _position;
 
+  int get head => positions.last;
+
   void switchToTop(bool ate) {
     if (_currentDirection != Direction.bottom) {
       _goTop();

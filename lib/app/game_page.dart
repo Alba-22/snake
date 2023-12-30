@@ -18,9 +18,13 @@ class _GamePageState extends State<GamePage> {
 
   late Timer timer;
 
+  final random = Random();
+  late int foodPosition;
+
   @override
   void initState() {
     super.initState();
+    foodPosition = random.nextInt(numberOfSquares);
     timer = Timer.periodic(
       const Duration(milliseconds: 100),
       (timer) {
@@ -34,16 +38,21 @@ class _GamePageState extends State<GamePage> {
   // GameLoop
   void update() {
     setState(() {
+      final ate = snake.head == foodPosition;
+
       switch (currentDirection) {
         case Direction.top:
-          snake.switchToTop(false);
+          snake.switchToTop(ate);
         case Direction.bottom:
-          snake.switchToBottom(false);
+          snake.switchToBottom(ate);
         case Direction.right:
-          snake.switchToRight(false);
+          snake.switchToRight(ate);
         case Direction.left:
-          snake.switchToLeft(false);
+          snake.switchToLeft(ate);
         default:
+      }
+      if (ate) {
+        foodPosition = random.nextInt(numberOfSquares);
       }
     });
   }
@@ -73,6 +82,9 @@ class _GamePageState extends State<GamePage> {
             } else if (value.isKeyPressed(LogicalKeyboardKey.arrowLeft)) {
               currentDirection = Direction.left;
             } else if (value.isKeyPressed(LogicalKeyboardKey.space)) {
+              currentDirection = Direction.idle;
+            } else if (value.isKeyPressed(LogicalKeyboardKey.keyR)) {
+              snake = Snake();
               currentDirection = Direction.idle;
             }
           });
@@ -104,19 +116,8 @@ class _GamePageState extends State<GamePage> {
                       padding: const EdgeInsets.all(1),
                       child: Container(
                         decoration: BoxDecoration(
-                          color: snake.positions.contains(index) ? Colors.orange : Colors.grey[900],
+                          color: squareColor(index),
                           borderRadius: BorderRadius.circular(2),
-                        ),
-                        child: Center(
-                          child: Text(
-                            index.toString(),
-                            style: TextStyle(
-                              color: snake.positions.contains(index)
-                                  ? Colors.black
-                                  : Colors.grey.withOpacity(0.5),
-                              fontSize: 9,
-                            ),
-                          ),
                         ),
                       ),
                     );
@@ -137,5 +138,14 @@ class _GamePageState extends State<GamePage> {
         ),
       ),
     );
+  }
+
+  Color squareColor(int index) {
+    if (index == foodPosition) {
+      return Colors.green;
+    } else if (snake.positions.contains(index)) {
+      return Colors.orange;
+    }
+    return Colors.grey[900]!;
   }
 }
