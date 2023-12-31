@@ -1,12 +1,22 @@
+import 'dart:math';
+
 import 'constants.dart';
 
 class Snake {
-  final List<int> _position;
-  Direction _currentDirection;
+  late final List<int> _position;
+  late Direction _currentDirection;
 
-  Snake()
-      : _position = [...snakeInitialPosition],
-        _currentDirection = Direction.bottom;
+  Snake() {
+    final int randomInitPosition =
+        Random().nextInt(numberOfSquares - (initialSnakeSize * numberOfRows));
+    _position = List.generate(
+      initialSnakeSize,
+      (index) {
+        return randomInitPosition + (index * numberOfColumns);
+      },
+    );
+    _currentDirection = Direction.bottom;
+  }
 
   int get size => _position.length;
 
