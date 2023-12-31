@@ -7,6 +7,7 @@ import 'package:flutter_snake/app/snake.dart';
 
 enum GameState {
   idle,
+  starting,
   playing,
   paused,
   gameOver;
@@ -18,6 +19,8 @@ enum GameState {
   bool get isPlaying => this == playing;
 
   bool get isIdle => this == idle;
+
+  bool get isStarting => this == starting;
 }
 
 class GameController extends ChangeNotifier {
@@ -28,43 +31,58 @@ class GameController extends ChangeNotifier {
   Direction _currentDirection = Direction.bottom;
   late int _foodPosition;
 
+  int _secondsToStart = 3;
+
   GameController() {
     _foodPosition = _getRandomPosition;
   }
 
-  play() {
+  void _play() {
     _stopwatch.start();
     _gameState = GameState.playing;
     notifyListeners();
   }
 
-  pause() {
+  void _pause() {
     _stopwatch.stop();
     _gameState = GameState.paused;
     notifyListeners();
   }
 
-  reset() {
+  Future<void> reset() async {
     _stopwatch.reset();
     _stopwatch.stop();
     _snake = Snake();
-    _gameState = GameState.idle;
+    _gameState = GameState.starting;
     _currentDirection = Direction.bottom;
     _points = 0;
     _foodPosition = _getRandomPosition;
-    Future.delayed(const Duration(seconds: 3)).then((value) {
-      play();
-    });
+    _secondsToStart = 3;
+    notifyListeners();
+    await Future.delayed(const Duration(seconds: 1));
+    _secondsToStart--;
+    notifyListeners();
+    await Future.delayed(const Duration(seconds: 1));
+    _secondsToStart--;
+    notifyListeners();
+    await Future.delayed(const Duration(seconds: 1));
+    _secondsToStart--;
+    notifyListeners();
+    _play();
+  }
+
+  void _gameOver() {
+    _gameState = GameState.gameOver;
+    _stopwatch.stop();
     notifyListeners();
   }
 
-  updateGame() {
+  void updateGame() {
     if (_gameState.isOver) {
       return;
     }
     if (_snake.collidedItself) {
-      _gameState = GameState.gameOver;
-      notifyListeners();
+      _gameOver();
       return;
     }
     if (_gameState.isPlaying) {
@@ -88,7 +106,10 @@ class GameController extends ChangeNotifier {
     }
   }
 
-  onKeyPress(LogicalKeyboardKey key) {
+  void onKeyPress(LogicalKeyboardKey key) {
+    if (gameState.isStarting) {
+      return;
+    }
     switch (key) {
       case LogicalKeyboardKey.arrowUp:
         if (_gameState.isPlaying) {
@@ -121,9 +142,9 @@ class GameController extends ChangeNotifier {
         }
       case LogicalKeyboardKey.space:
         if (_gameState.isPlaying) {
-          pause();
+          _pause();
         } else if (_gameState.isPaused || _gameState.isIdle) {
-          play();
+          _play();
         }
       case LogicalKeyboardKey.keyR:
         reset();
@@ -148,4 +169,6 @@ class GameController extends ChangeNotifier {
   Snake get snake => _snake;
 
   int get foodPosition => _foodPosition;
+
+  int get secondsToStart => _secondsToStart;
 }

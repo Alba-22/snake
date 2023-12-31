@@ -18,10 +18,14 @@ class _GamePageState extends State<GamePage> {
 
   final controller = GameController();
 
+  Timer? startingTimer;
+
   @override
   void initState() {
     super.initState();
-    controller.reset();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      controller.reset();
+    });
     timer = Timer.periodic(
       const Duration(milliseconds: 100),
       (timer) {
@@ -82,30 +86,52 @@ class _GamePageState extends State<GamePage> {
                   maxWidth: min(fieldWidth.toDouble(), 500),
                   maxHeight: fieldHeight.toDouble(),
                 ),
-                child: GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: numberOfSquares,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: numberOfColumns,
-                    mainAxisExtent: blockSize,
-                  ),
-                  itemBuilder: (context, index) {
-                    return AnimatedBuilder(
-                      animation: controller,
-                      builder: (context, child) {
-                        return Container(
-                          height: blockSize,
-                          width: blockSize,
-                          padding: const EdgeInsets.all(1),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: squareColor(index),
-                              borderRadius: BorderRadius.circular(2),
+                child: AnimatedBuilder(
+                  animation: controller,
+                  builder: (context, child) {
+                    return Stack(
+                      children: [
+                        Opacity(
+                          opacity: controller.gameState.isStarting ? 0.5 : 1,
+                          child: GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: numberOfSquares,
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: numberOfColumns,
+                              mainAxisExtent: blockSize,
+                            ),
+                            itemBuilder: (context, index) {
+                              return AnimatedBuilder(
+                                animation: controller,
+                                builder: (context, child) {
+                                  return Container(
+                                    height: blockSize,
+                                    width: blockSize,
+                                    padding: const EdgeInsets.all(1),
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: squareColor(index),
+                                        borderRadius: BorderRadius.circular(2),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                        if (controller.gameState.isStarting)
+                          Center(
+                            child: Text(
+                              controller.secondsToStart.toString(),
+                              style: const TextStyle(
+                                fontSize: 140,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
-                        );
-                      },
+                      ],
                     );
                   },
                 ),
