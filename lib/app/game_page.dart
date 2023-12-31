@@ -92,7 +92,9 @@ class _GamePageState extends State<GamePage> {
                     return Stack(
                       children: [
                         Opacity(
-                          opacity: controller.gameState.isStarting ? 0.5 : 1,
+                          opacity: controller.gameState.isStarting || controller.gameState.isOver
+                              ? 0.5
+                              : 1,
                           child: GridView.builder(
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
@@ -131,6 +133,39 @@ class _GamePageState extends State<GamePage> {
                               ),
                             ),
                           ),
+                        if (controller.gameState.isOver)
+                          Center(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.grey[900]!.withOpacity(0.75),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 32,
+                                vertical: 16,
+                              ),
+                              child: const Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    "GAME OVER",
+                                    style: TextStyle(
+                                      fontSize: 64,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    "Aperte R para reiniciar o jogo",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
                       ],
                     );
                   },
